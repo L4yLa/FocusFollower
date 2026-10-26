@@ -6,9 +6,13 @@
 
 #include <QMetaObject>
 
+#include <algorithm>
+
 namespace {
 
 const char *kConfigFile = "config.json";
+constexpr int kMinWait = 0;
+constexpr int kMaxWait = 60;
 
 char *configPath()
 {
@@ -38,7 +42,9 @@ void Controller::load()
 		return;
 
 	obs_data_set_default_bool(data, "enabled", true);
+	obs_data_set_default_int(data, "wait", 3);
 	enabled_ = obs_data_get_bool(data, "enabled");
+	setWaitSeconds((int)obs_data_get_int(data, "wait"));
 
 	obs_data_array_t *keys = obs_data_get_array(data, "hotkey");
 	if (keys) {
@@ -58,6 +64,7 @@ void Controller::save() const
 
 	obs_data_t *data = obs_data_create();
 	obs_data_set_bool(data, "enabled", enabled_);
+	obs_data_set_int(data, "wait", wait_);
 	obs_data_array_t *keys = obs_hotkey_save(hotkey_);
 	obs_data_set_array(data, "hotkey", keys);
 	obs_data_array_release(keys);
@@ -75,6 +82,11 @@ void Controller::setEnabled(bool on)
 		return;
 	obs_log(LOG_INFO, "%s", on ? "enabled" : "disabled");
 	emit enabledChanged(on);
+}
+
+void Controller::setWaitSeconds(int s)
+{
+	wait_ = std::clamp(s, kMinWait, kMaxWait);
 }
 
 void Controller::toggle()

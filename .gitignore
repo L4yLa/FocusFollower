@@ -7,6 +7,7 @@
 !/cmake
 !/data
 !/src
+!/test
 !.clang-format
 !.gersemirc
 !.gitignore
@@ -24,3 +25,7 @@
 
 # Exclude CMake build number cache
 /cmake/.CMakeBuildNumber
+
+
+# Unit test build output
+/build_test

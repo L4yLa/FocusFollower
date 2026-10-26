@@ -18,6 +18,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include "controller.hpp"
 #include "dock.hpp"
+#include "engine.hpp"
+#include "obs/config.hpp"
 
 #include <obs-frontend-api.h>
 #include <obs-module.h>
@@ -28,12 +30,40 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 namespace {
 
+const char *kSaveKey = "focus-follower";
+
 Controller *controller = nullptr;
+Engine *engine = nullptr;
 
 void onFrontendEvent(enum obs_frontend_event event, void *)
 {
-	if (event == OBS_FRONTEND_EVENT_EXIT && controller)
-		controller->save();
+	switch (event) {
+	case OBS_FRONTEND_EVENT_SCENE_COLLECTION_CHANGING:
+	case OBS_FRONTEND_EVENT_SCENE_COLLECTION_CLEANUP:
+		if (engine)
+			engine->reset();
+		break;
+	case OBS_FRONTEND_EVENT_EXIT:
+		if (controller)
+			controller->save();
+		break;
+	default:
+		break;
+	}
+}
+
+// Rules are stored in the scene collection.
+void onSave(obs_data_t *data, bool saving, void *)
+{
+	if (!engine)
+		return;
+	if (saving) {
+		OBSDataAutoRelease obj = ff::rulesToData(engine->rules());
+		obs_data_set_obj(data, kSaveKey, obj);
+	} else {
+		OBSDataAutoRelease obj = obs_data_get_obj(data, kSaveKey);
+		engine->setRules(ff::rulesFromData(obj));
+	}
 }
 
 } // namespace
@@ -42,19 +72,24 @@ bool obs_module_load(void)
 {
 	controller = new Controller();
 	controller->load();
+	engine = new Engine(controller);
 
-	auto *dock = new Dock(controller);
+	auto *dock = new Dock(controller, engine);
 	if (!obs_frontend_add_dock_by_id("focus-follower", obs_module_text("FocusFollower"), dock))
 		obs_log(LOG_WARNING, "failed to add dock");
 
 	obs_frontend_add_event_callback(onFrontendEvent, nullptr);
+	obs_frontend_add_save_callback(onSave, nullptr);
 	obs_log(LOG_INFO, "loaded (version %s)", PLUGIN_VERSION);
 	return true;
 }
 
 void obs_module_unload(void)
 {
+	obs_frontend_remove_save_callback(onSave, nullptr);
 	obs_frontend_remove_event_callback(onFrontendEvent, nullptr);
+	delete engine;
+	engine = nullptr;
 	delete controller;
 	controller = nullptr;
 }

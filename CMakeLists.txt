@@ -36,7 +36,38 @@ endif()
 
 target_sources(
   ${CMAKE_PROJECT_NAME}
-  PRIVATE src/plugin-main.cpp src/controller.cpp src/controller.hpp src/dock.cpp src/dock.hpp
+  PRIVATE
+    src/plugin-main.cpp
+    src/controller.cpp
+    src/controller.hpp
+    src/dock.cpp
+    src/dock.hpp
+    src/engine.cpp
+    src/engine.hpp
+    src/core/rules.cpp
+    src/core/rules.hpp
+    src/core/logic.cpp
+    src/core/logic.hpp
+    src/obs/config.cpp
+    src/obs/config.hpp
+    src/obs/scene-ops.cpp
+    src/obs/scene-ops.hpp
+    src/obs/validation.cpp
+    src/obs/validation.hpp
+    src/platform/window-system.hpp
+    src/ui/rule-dialog.cpp
+    src/ui/rule-dialog.hpp
+    src/ui/settings-dialog.cpp
+    src/ui/settings-dialog.hpp
 )
+
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src)
+
+if(WIN32)
+  target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/platform/window-system-win.cpp)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE dwmapi)
+else()
+  target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/platform/window-system-stub.cpp)
+endif()
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})

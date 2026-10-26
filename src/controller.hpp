@@ -14,6 +14,8 @@ public:
 	~Controller() override;
 
 	bool enabled() const { return enabled_.load(); }
+	int waitSeconds() const { return wait_; }
+	void setWaitSeconds(int s);
 	void load();
 	void save() const;
 
@@ -28,5 +30,6 @@ private:
 	static void onHotkey(void *data, obs_hotkey_id id, obs_hotkey_t *key, bool pressed);
 
 	std::atomic<bool> enabled_{true};
+	int wait_ = 3;
 	obs_hotkey_id hotkey_ = OBS_INVALID_HOTKEY_ID;
 };
