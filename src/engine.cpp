@@ -31,6 +31,24 @@ void Engine::setRules(const Rules &rules)
 {
 	rules_ = rules;
 	dwell_.reset();
+	size_t entries = 0;
+	for (const SourceGroup &g : rules_.groups)
+		entries += g.entries.size();
+	obs_log(LOG_INFO, "rules: %zu scene, %zu group, %zu source", rules_.scenes.size(), rules_.groups.size(),
+		entries);
+
+	Report report = checkRules(rules_);
+	for (size_t i = 0; i < report.scenes.size(); i++)
+		if (report.scenes[i] != Problem::None)
+			obs_log(LOG_INFO, "scene rule %zu disabled: %d", i + 1, (int)report.scenes[i]);
+	for (size_t g = 0; g < report.groups.size(); g++) {
+		if (report.groups[g] != Problem::None)
+			obs_log(LOG_INFO, "group %zu disabled: %d", g + 1, (int)report.groups[g]);
+		for (size_t e = 0; e < report.entries[g].size(); e++)
+			if (report.entries[g][e] != Problem::None)
+				obs_log(LOG_INFO, "group %zu rule %zu disabled: %d", g + 1, e + 1,
+					(int)report.entries[g][e]);
+	}
 }
 
 void Engine::clearState()
@@ -93,6 +111,7 @@ void Engine::apply(const WindowInfo &w)
 		return;
 	Report report = checkRules(rules_);
 	Plan plan = evaluate(rules_, report.validity(), w);
+	obs_log(LOG_INFO, "focus: %s \"%s\" scene=%d", w.exe.c_str(), w.title.c_str(), plan.scene);
 	if (plan.empty())
 		return;
 
@@ -119,6 +138,8 @@ void Engine::applyGroup(obs_source_t *front, const SourceGroup &group, const Sou
 {
 	OBSSourceAutoRelease src = sourceByUuid(entry.source);
 	std::vector<OBSSceneItem> items = onScreenItems(front, src);
+	obs_log(LOG_INFO, "group \"%s\": %s on screen %zu in \"%s\"", group.name.c_str(), entry.sourceName.c_str(),
+		items.size(), front ? obs_source_get_name(front) : "");
 	if (items.empty())
 		return;
 

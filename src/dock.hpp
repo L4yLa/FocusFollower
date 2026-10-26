@@ -3,20 +3,14 @@
 #include <QWidget>
 
 class Controller;
-class Engine;
 class QCheckBox;
 
 class Dock : public QWidget {
 	Q_OBJECT
 
 public:
-	Dock(Controller *controller, Engine *engine, QWidget *parent = nullptr);
-
-private slots:
-	void openSettings();
+	explicit Dock(Controller *controller, QWidget *parent = nullptr);
 
 private:
-	Controller *controller_;
-	Engine *engine_;
 	QCheckBox *enabled_;
 };

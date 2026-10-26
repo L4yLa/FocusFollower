@@ -1,5 +1,8 @@
 #include "window-system.hpp"
 
+#include <plugin-support.h>
+#include <util/base.h>
+
 #include <windows.h>
 #include <dwmapi.h>
 
@@ -173,6 +176,7 @@ WindowEvents::WindowEvents(std::function<void()> onChange) : onChange_(std::move
 		if (h)
 			hooks_.push_back(h);
 	}
+	obs_log(LOG_INFO, "window hooks: %zu/%zu", hooks_.size(), std::size(events));
 }
 
 WindowEvents::~WindowEvents()

@@ -20,10 +20,13 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "dock.hpp"
 #include "engine.hpp"
 #include "obs/config.hpp"
+#include "ui/settings-dialog.hpp"
 
 #include <obs-frontend-api.h>
 #include <obs-module.h>
 #include <plugin-support.h>
+
+#include <QMainWindow>
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
@@ -72,6 +75,15 @@ void onSave(obs_data_t *data, bool saving, void *)
 	}
 }
 
+void openSettings(void *)
+{
+	if (!engine || !controller)
+		return;
+	auto *main = static_cast<QMainWindow *>(obs_frontend_get_main_window());
+	SettingsDialog dlg(engine, controller, main);
+	dlg.exec();
+}
+
 } // namespace
 
 bool obs_module_load(void)
@@ -80,10 +92,11 @@ bool obs_module_load(void)
 	controller->load();
 	engine = new Engine(controller);
 
-	auto *dock = new Dock(controller, engine);
+	auto *dock = new Dock(controller);
 	if (!obs_frontend_add_dock_by_id("focus-follower", obs_module_text("FocusFollower"), dock))
 		obs_log(LOG_WARNING, "failed to add dock");
 
+	obs_frontend_add_tools_menu_item(obs_module_text("ToolsMenu"), openSettings, nullptr);
 	obs_frontend_add_event_callback(onFrontendEvent, nullptr);
 	obs_frontend_add_save_callback(onSave, nullptr);
 	obs_log(LOG_INFO, "loaded (version %s)", PLUGIN_VERSION);
