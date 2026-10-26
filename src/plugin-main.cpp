@@ -79,8 +79,8 @@ void openSettings(void *)
 {
 	if (!engine || !controller)
 		return;
-	auto *main = static_cast<QMainWindow *>(obs_frontend_get_main_window());
-	SettingsDialog dlg(engine, controller, main);
+	auto *parent = static_cast<QMainWindow *>(obs_frontend_get_main_window());
+	SettingsDialog dlg(engine, controller, parent);
 	dlg.exec();
 }
 

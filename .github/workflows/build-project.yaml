@@ -99,6 +99,9 @@ jobs:
           "pluginName=${ProductName}" >> $env:GITHUB_OUTPUT
           "pluginVersion=${ProductVersion}" >> $env:GITHUB_OUTPUT
 
+      - name: Add MSVC Problem Matcher
+        run: echo "::add-matcher::.github/msvc-matcher.json"
+
       - name: Build Plugin 🧱
         uses: ./.github/actions/build-plugin
         with:
