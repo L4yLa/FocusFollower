@@ -33,17 +33,28 @@ void Engine::setRules(const Rules &rules)
 	dwell_.reset();
 }
 
-void Engine::reset()
+void Engine::clearState()
 {
-	rules_ = {};
 	dwell_.reset();
 	watches_.clear();
 }
 
+void Engine::reset()
+{
+	rules_ = {};
+	clearState();
+}
+
+void Engine::stop()
+{
+	poll_.stop();
+	events_.reset();
+	clearState();
+}
+
 void Engine::onEnabledChanged(bool)
 {
-	dwell_.reset();
-	watches_.clear();
+	clearState();
 }
 
 void Engine::schedule()
@@ -59,7 +70,7 @@ void Engine::schedule()
 
 void Engine::tick()
 {
-	if (!controller_->enabled())
+	if (!poll_.isActive() || !controller_->enabled())
 		return;
 
 	if (!watches_.empty()) {

@@ -21,7 +21,9 @@ public:
 
 	const ff::Rules &rules() const { return rules_; }
 	void setRules(const ff::Rules &rules);
+	void clearState();
 	void reset();
+	void stop();
 
 private slots:
 	void tick();

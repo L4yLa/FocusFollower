@@ -39,11 +39,17 @@ void onFrontendEvent(enum obs_frontend_event event, void *)
 {
 	switch (event) {
 	case OBS_FRONTEND_EVENT_SCENE_COLLECTION_CHANGING:
+		// The old collection is saved after this event, so keep the rules.
+		if (engine)
+			engine->clearState();
+		break;
 	case OBS_FRONTEND_EVENT_SCENE_COLLECTION_CLEANUP:
 		if (engine)
 			engine->reset();
 		break;
 	case OBS_FRONTEND_EVENT_EXIT:
+		if (engine)
+			engine->stop();
 		if (controller)
 			controller->save();
 		break;
