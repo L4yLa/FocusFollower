@@ -1,7 +1,7 @@
 #include "window-system.hpp"
 
-#include <plugin-support.h>
 #include <util/base.h>
+#include <plugin-support.h>
 
 #include <windows.h>
 #include <dwmapi.h>
