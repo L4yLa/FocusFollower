@@ -7,6 +7,7 @@
 #include <obs-frontend-api.h>
 #include <obs-module.h>
 
+#include <QColor>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QGroupBox>
@@ -92,6 +93,13 @@ int selectedIndex(QTreeWidget *list)
 {
 	QTreeWidgetItem *item = list->currentItem();
 	return item ? item->data(0, Qt::UserRole).toInt() : -1;
+}
+
+QString invalidText(Problem p)
+{
+	if (p == Problem::None)
+		return {};
+	return text("InvalidPrefix") + QString::fromUtf8(problemText(p));
 }
 
 template<class T> void reorder(QTreeWidget *list, std::vector<T> &vec)
@@ -321,8 +329,8 @@ void SettingsDialog::refresh()
 	scenes_->clear();
 	for (int i = 0; i < (int)rules_.scenes.size(); i++) {
 		SceneRule &s = rules_.scenes[i];
-		scenes_->addTopLevelItem(makeItem(i, {qs(s.exe), qs(liveName(s.scene, s.sceneName)),
-						      QString::fromUtf8(problemText(report.scenes[i]))}));
+		scenes_->addTopLevelItem(
+			makeItem(i, {qs(s.exe), qs(liveName(s.scene, s.sceneName)), invalidText(report.scenes[i])}));
 	}
 	if (sceneRow >= 0 && sceneRow < scenes_->topLevelItemCount())
 		scenes_->setCurrentItem(scenes_->topLevelItem(sceneRow));
@@ -346,17 +354,21 @@ void SettingsDialog::refresh()
 		if (model)
 			model->item(1)->setEnabled(grp.mode == GroupMode::ZOrder || zOrderPossible(g));
 
-		QString groupProblem = QString::fromUtf8(problemText(report.groups[g]));
+		QString groupProblem = invalidText(report.groups[g]);
 		for (int i = 0; i < (int)grp.entries.size(); i++) {
 			SourceEntry &e = grp.entries[i];
-			QString status = QString::fromUtf8(problemText(report.entries[g][i]));
+			QString status = invalidText(report.entries[g][i]);
 			if (status.isEmpty())
 				status = groupProblem;
-			if (status.isEmpty() && report.priorityWarnings[g][i])
+			bool warn = status.isEmpty() && report.priorityWarnings[g][i];
+			if (warn)
 				status = text("Warn.Priority");
-			entries_->addTopLevelItem(
+			QTreeWidgetItem *item =
 				makeItem(i, {qs(e.exe), titleModeText(e.title.mode), qs(e.title.pattern),
-					     qs(liveName(e.source, e.sourceName)), status}));
+					     qs(liveName(e.source, e.sourceName)), status});
+			if (warn)
+				item->setForeground(4, QColor(Qt::yellow));
+			entries_->addTopLevelItem(item);
 		}
 		if (entryRow >= 0 && entryRow < entries_->topLevelItemCount())
 			entries_->setCurrentItem(entries_->topLevelItem(entryRow));

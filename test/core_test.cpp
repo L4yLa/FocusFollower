@@ -56,6 +56,10 @@ static void testExe()
 	CHECK(exeEquals("Chrome.EXE", "chrome.exe"));
 	CHECK(!exeEquals("", ""));
 	CHECK(!exeEquals("chrome.exe", "code.exe"));
+	CHECK(isBrowserExe("Chrome.exe"));
+	CHECK(isBrowserExe("msedge.exe"));
+	CHECK(isBrowserExe("firefox.exe"));
+	CHECK(!isBrowserExe("Code.exe"));
 }
 
 static void testDwell()

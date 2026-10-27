@@ -62,5 +62,6 @@ struct WindowInfo {
 std::string lowerAscii(std::string s);
 bool exeEquals(const std::string &a, const std::string &b);
 bool entryMatches(const SourceEntry &e, const WindowInfo &w);
+bool isBrowserExe(const std::string &exe);
 
 } // namespace ff

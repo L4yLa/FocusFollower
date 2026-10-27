@@ -48,7 +48,7 @@ Report checkRules(const Rules &rules)
 			else if (!e.title.valid())
 				p = Problem::BadRegex;
 			row.push_back(p);
-			warn.push_back(src && capturePriorityWarning(src));
+			warn.push_back(src && isBrowserExe(e.exe) && capturePriorityWarning(src));
 
 			if (src && mine.insert(e.source).second)
 				members.emplace_back(src.Get());

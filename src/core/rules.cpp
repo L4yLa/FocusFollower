@@ -50,6 +50,15 @@ bool exeEquals(const std::string &a, const std::string &b)
 	return !a.empty() && lowerAscii(a) == lowerAscii(b);
 }
 
+bool isBrowserExe(const std::string &exe)
+{
+	static const char *const browsers[] = {"chrome.exe", "firefox.exe", "msedge.exe"};
+	for (const char *b : browsers)
+		if (exeEquals(exe, b))
+			return true;
+	return false;
+}
+
 bool entryMatches(const SourceEntry &e, const WindowInfo &w)
 {
 	return exeEquals(e.exe, w.exe) && e.title.matches(w.title);
