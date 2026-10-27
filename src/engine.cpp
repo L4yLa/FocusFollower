@@ -7,7 +7,6 @@
 #include <plugin-support.h>
 #include <util/platform.h>
 
-#include <algorithm>
 #include <set>
 
 using namespace ff;
@@ -15,7 +14,6 @@ using namespace ff;
 namespace {
 
 constexpr int kPollMs = 100;
-constexpr int kStatsMs = 10000;
 
 } // namespace
 
@@ -24,8 +22,6 @@ Engine::Engine(Controller *controller) : controller_(controller)
 	connect(&poll_, &QTimer::timeout, this, &Engine::tick);
 	connect(controller_, &Controller::enabledChanged, this, &Engine::onEnabledChanged);
 	poll_.start(kPollMs);
-	connect(&statsTimer_, &QTimer::timeout, this, &Engine::logStats);
-	statsTimer_.start(kStatsMs);
 	events_ = std::make_unique<WindowEvents>([this]() { schedule(); });
 }
 
@@ -90,37 +86,10 @@ void Engine::schedule()
 	});
 }
 
-void Engine::logStats()
-{
-	HookStats h = takeHookStats();
-	double sec = kStatsMs / 1000.0;
-	obs_log(LOG_INFO,
-		"load/s: foreground %.1f, namechange %.1f, destroy %.1f, passed %.1f, hook %.3f ms, "
-		"tick %.1f (%.3f ms, max %.3f ms)",
-		h.foreground / sec, h.nameChange / sec, h.destroy / sec, h.passed / sec, h.callbackNs / sec / 1e6,
-		ticks_ / sec, tickNs_ / sec / 1e6, tickMaxNs_ / 1e6);
-	ticks_ = 0;
-	tickNs_ = 0;
-	tickMaxNs_ = 0;
-}
-
 void Engine::tick()
 {
 	if (!poll_.isActive() || !controller_->enabled())
 		return;
-
-	uint64_t start = os_gettime_ns();
-	struct Measure {
-		Engine *e;
-		uint64_t start;
-		~Measure()
-		{
-			uint64_t d = os_gettime_ns() - start;
-			e->ticks_++;
-			e->tickNs_ += d;
-			e->tickMaxNs_ = std::max(e->tickMaxNs_, d);
-		}
-	} measure{this, start};
 
 	if (!watches_.empty()) {
 		for (const std::string &uuid : watches_.check(windowTitle)) {

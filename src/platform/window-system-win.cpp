@@ -1,7 +1,6 @@
 #include "window-system.hpp"
 
 #include <util/base.h>
-#include <util/platform.h>
 #include <plugin-support.h>
 
 #include <windows.h>
@@ -116,24 +115,14 @@ BOOL CALLBACK collectApp(HWND hwnd, LPARAM param)
 }
 
 WindowEvents *instance = nullptr;
-HookStats stats;
 
 void CALLBACK onWinEvent(HWINEVENTHOOK, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
 {
-	uint64_t start = os_gettime_ns();
-	if (event == EVENT_SYSTEM_FOREGROUND)
-		stats.foreground++;
-	else if (event == EVENT_OBJECT_NAMECHANGE)
-		stats.nameChange++;
-	else
-		stats.destroy++;
-
-	if (instance && hwnd &&
-	    (event == EVENT_SYSTEM_FOREGROUND || (idObject == OBJID_WINDOW && idChild == CHILDID_SELF))) {
-		stats.passed++;
-		instance->notify();
-	}
-	stats.callbackNs += os_gettime_ns() - start;
+	if (!instance || !hwnd)
+		return;
+	if (event != EVENT_SYSTEM_FOREGROUND && (idObject != OBJID_WINDOW || idChild != CHILDID_SELF))
+		return;
+	instance->notify();
 }
 
 } // namespace
@@ -165,13 +154,6 @@ std::optional<std::string> windowTitle(uint64_t id)
 	if (!IsWindow(hwnd))
 		return std::nullopt;
 	return titleOf(hwnd);
-}
-
-HookStats takeHookStats()
-{
-	HookStats s = stats;
-	stats = {};
-	return s;
 }
 
 std::vector<RunningApp> runningApps()

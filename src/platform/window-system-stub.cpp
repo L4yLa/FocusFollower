@@ -17,11 +17,6 @@ std::vector<RunningApp> runningApps()
 	return {};
 }
 
-HookStats takeHookStats()
-{
-	return {};
-}
-
 WindowEvents::WindowEvents(std::function<void()> onChange) : onChange_(std::move(onChange)) {}
 
 WindowEvents::~WindowEvents() = default;
