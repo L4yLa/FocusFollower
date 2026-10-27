@@ -17,7 +17,7 @@ public:
 	const WindowInfo &current() const { return cur_; }
 
 private:
-	int64_t wait_ = 3000000000LL;
+	int64_t wait_ = 2000000000LL;
 	WindowInfo cur_;
 	int64_t since_ = 0;
 	bool known_ = false;

@@ -42,7 +42,7 @@ void Controller::load()
 		return;
 
 	obs_data_set_default_bool(data, "enabled", true);
-	obs_data_set_default_int(data, "wait", 3);
+	obs_data_set_default_int(data, "wait", 2);
 	enabled_ = obs_data_get_bool(data, "enabled");
 	setWaitSeconds((int)obs_data_get_int(data, "wait"));
 

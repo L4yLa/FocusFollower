@@ -4,10 +4,6 @@ OBS Studio plugin that switches scenes and shows sources based on the focused ap
 
 前面のアプリに応じて、OBS のシーン切替とソースの表示を自動で行うプラグインです。
 
-## Status
-
-Under development.
-
 ## Requirements
 
 - Windows
