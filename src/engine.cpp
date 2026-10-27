@@ -111,7 +111,6 @@ void Engine::apply(const WindowInfo &w)
 		return;
 	Report report = checkRules(rules_);
 	Plan plan = evaluate(rules_, report.validity(), w);
-	obs_log(LOG_INFO, "focus: %s \"%s\" scene=%d", w.exe.c_str(), w.title.c_str(), plan.scene);
 	if (plan.empty())
 		return;
 
@@ -138,8 +137,6 @@ void Engine::applyGroup(obs_source_t *front, const SourceGroup &group, const Sou
 {
 	OBSSourceAutoRelease src = sourceByUuid(entry.source);
 	std::vector<OBSSceneItem> items = onScreenItems(front, src);
-	obs_log(LOG_INFO, "group \"%s\": %s on screen %zu in \"%s\"", group.name.c_str(), entry.sourceName.c_str(),
-		items.size(), front ? obs_source_get_name(front) : "");
 	if (items.empty())
 		return;
 
